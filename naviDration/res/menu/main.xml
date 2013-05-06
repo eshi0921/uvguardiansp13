@@ -1,9 +1,39 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/action_settings"/>
-
-</menu>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/relative">
+ 
+   <TextView
+    android:textSize="30dp"
+    android:id="@+id/name"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    />
+ 
+   <TextView
+    android:textSize="20dp"
+    android:layout_below="@+id/name"
+    android:id="@+id/xval"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    />
+     
+    <TextView
+    android:textSize="20dp"
+    android:id="@+id/yval"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/xval"
+    />
+     
+    <TextView
+    android:textSize="20dp"
+    android:id="@+id/zval"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@+id/yval"
+    />
+   
+</RelativeLayout>
+    <menu xmlns:android="http://schemas.android.com/apk/res/android"></menu>
