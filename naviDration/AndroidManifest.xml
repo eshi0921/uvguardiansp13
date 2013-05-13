@@ -3,12 +3,21 @@
     package="com.example.navidration"
     android:versionCode="1"
     android:versionName="1.0" >
+	<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.INTERNET"/>
+ 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+ 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
+	<permission
+        android:name="com.example.navidration.permission.MAPS_RECEIVE"
+        android:protectionLevel="signature"/>
+	<uses-permission android:name="com.example.navidration.permission.MAPS_RECEIVE"/>
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="17" />
-	<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -23,6 +32,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
+        
+        <activity
+            android:name="com.example.navidration.gpsActivity">
+            </activity>
+        <uses-library android:name="com.google.android.maps" />
+       </application>
 
 </manifest>
