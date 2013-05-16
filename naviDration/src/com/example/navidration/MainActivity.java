@@ -6,18 +6,25 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.content.Context;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import android.graphics.*;
 import com.google.android.maps.*;
@@ -32,13 +39,89 @@ public class MainActivity extends MapActivity implements SensorEventListener {
 	  private List<Overlay> mapOverlays;
 	  private MapView mapView;
 	  private Projection projection;  
+	  String weatherData;
+	  DecimalFormat dForm;
+
+	  private class WeatherAsyncTask extends AsyncTask<Void, Integer, Void>{
+	      
+			@Override
+			protected void onPreExecute() {
+			// update the UI immediately after the task is executed
+				super.onPreExecute();
+
+			}
+
+			@Override
+			protected void onProgressUpdate(Integer... values) {
+				super.onProgressUpdate(values);
+			}
+
+			@Override
+			protected void onPostExecute(Void result) {
+				super.onPostExecute(result);
+			}
+
+			@Override
+			protected Void doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE); 
+				  Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				  double longitude = Double.valueOf(dForm.format(location.getLongitude()));
+				  double latitude = Double.valueOf(dForm.format(location.getLatitude()));
+				  System.out.println("Location: " +longitude+" "+latitude);
+				  URL url = null;
+				  String data= "";
+				  BufferedReader in = null;
+				  try
+			        {
+					  	String l = "";
+					  	String output = "";
+					  	String api_url = "http://api.worldweatheronline.com/free/v1/weather.ashx?key=324eefpxmgz3ww7c6tga4svd&num_of_days=1&q="+latitude+","+longitude+"&format=json";
+					  	url = new URL(api_url);
+					  	HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+					  	if(urlConnection!=null){
+					  		urlConnection.setDoInput(true);
+					  		}
+					  	InputStream is = urlConnection.getInputStream();
+					  	InputStreamReader isr = new InputStreamReader(is);
+			            in = new BufferedReader(isr);
+			            while ((l = in.readLine()) !=null){
+
+			                JSONObject weather_json = new JSONObject(l);
+			                
+			                String tempC = weather_json.getJSONObject("data").getJSONArray("current_condition").getJSONObject(0).getString("temp_C");
+			                String humidity = weather_json.getJSONObject("data").getJSONArray("current_condition").getJSONObject(0).getString("humidity");
+			                System.out.println("Weather tempC: "+tempC);
+			                System.out.println("Weather humidity: "+humidity);
+			                weatherData = tempC+","+humidity;
+			            }
+			            in.close();
+			        }
+				  catch (Exception ex)
+				  {
+					  ex.printStackTrace();
+				  }
+				  finally{
+			            if (in != null){
+			                try{
+			                    in.close();
+			                }catch (Exception e){
+			                    e.printStackTrace();
+			                }
+			            }
+			        }
+				return null;
+			}
+		}
+	  
+	  
 	  
 	  
 	  @Override
 	  public final void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_main);
-
+	    dForm = new DecimalFormat("#.###");
 	    mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 	    mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 
@@ -51,9 +134,17 @@ public class MainActivity extends MapActivity implements SensorEventListener {
 	    mapOverlays = mapView.getOverlays();        
 	    projection = mapView.getProjection();
 	    mapOverlays.add(new MyOverlay());    
-	    
-	    String weatherData = getWeatherData();
-	    
+	    WeatherAsyncTask task = new WeatherAsyncTask();
+	    task.execute();
+	    try
+	    {
+	    task.get(1000, TimeUnit.MILLISECONDS);
+	    }
+	    catch (Exception ex)
+	    {
+	    	
+	    }
+	    System.out.println("WeatherData: "+weatherData);
 	    //get textviews
 	    title=(TextView)findViewById(R.id.name);   
 	    tv=(TextView)findViewById(R.id.xval);
@@ -69,6 +160,7 @@ public class MainActivity extends MapActivity implements SensorEventListener {
 		protected boolean isRouteDisplayed() {
 		    return false;
 		}
+	 
 
 		class MyOverlay extends Overlay{
 
@@ -169,59 +261,6 @@ public class MainActivity extends MapActivity implements SensorEventListener {
 	    	}
 	    }
 	  }
-	  
-	  protected String getWeatherData()
-	  {
-		  LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE); 
-		  Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		  double longitude = location.getLongitude();
-		  double latitude = location.getLatitude();
-		  HttpClient httpc_weather = new DefaultHttpClient();
-		  HttpGet http_request = new HttpGet("http://api.worldweatheronline.com/free/v1/tz.ashx?key=324eefpxmgz3ww7c6tga4svd&num_of_days=1&q="+longitude+","+latitude+"&format=json");
-		  HttpResponse response;
-		  BufferedReader in = null;
-		  String data= "";
-		  try
-	        {
-	           	response = httpc_weather.execute(http_request);
-	            response.getStatusLine().getStatusCode();
-	            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-	            StringBuffer sb = new StringBuffer("");
-	            String l = "";
-	            String output = "";
-	            String nl = System.getProperty("line.separator");
-	            while ((l = in.readLine()) !=null){
-	                sb.append(l + nl);
-	                if (l.contains("humidity"))
-	                {
-	                	output += l.split(":= ")[1]+"%,";
-	                }
-	                else if (l.contains("temp_C"))
-	                {
-	                	output += l.split(":= ")[1]+"C";
-	                }
-	            }
-	            in.close();
-	            data = sb.toString();
-	            return output;        
-	        }
-		  catch (Exception ex)
-		  {
-		  }
-		  finally{
-	            if (in != null){
-	                try{
-	                    in.close();
-	                    return data;
-	                }catch (Exception e){
-	                    e.printStackTrace();
-	                }
-	            }
-	        }
-		  return data;
-	  }
-	  
-	  
 	  
 	  
 	}
