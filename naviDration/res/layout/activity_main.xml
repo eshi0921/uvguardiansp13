@@ -6,52 +6,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/relative">
-	<com.google.android.maps.MapView
-	    xmlns:android="http://schemas.android.com/apk/res/android"
-	    android:id="@+id/mapview"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
-	    android:clickable="true"
-	    android:apiKey="AIzaSyAtsQ33bttidl-NR5NSQYNdh1tYn_FGM0U"
-	/>
-   <TextView
+
+    <TextView
     android:textSize="30dp"
     android:id="@+id/name"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     />
  
-   <TextView
-    android:textSize="20dp"
-    android:layout_below="@+id/name"
-    android:id="@+id/xval"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    />
-     
-    <TextView
-    android:textSize="20dp"
-    android:id="@+id/yval"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/xval"
-    />
-     
-    <TextView
-    android:textSize="20dp"
-    android:id="@+id/zval"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/yval"
-    />
-    
+
+
     <TextView
     android:textSize="20dp"
     android:id="@+id/weatherval"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_below="@+id/zval"
+    android:layout_below="@+id/name"
     />
+
+    <TextView
+            android:textSize="20dp"
+            android:id="@+id/stepcount"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/weatherval"
+            />
         
     
     
