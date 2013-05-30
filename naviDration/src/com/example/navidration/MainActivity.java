@@ -16,8 +16,10 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Timer;
+import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import android.opengl.*;
 
@@ -27,14 +29,13 @@ import org.json.JSONObject;
 import android.graphics.*;
 import com.google.android.maps.*;
 
-
 public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGravity;
     private Sensor mMagnetic;
-    TextView title,tv3, tv4;
-    RelativeLayout layout;
+    TextView title,tv1,tv2, tv3, tv4;
+
     private FileWriter writer;
 
     float[] gravity = null;
@@ -49,13 +50,16 @@ public class MainActivity extends Activity implements SensorEventListener {
     private float threshold = 0;
     private int step = 0;
 
+    private static int DEFAULT_WALKING_MAX_STEPS = 200;
+    private static int DEFAULT_IDLE = 0;
+    private static int DEFAULT_JOGGING_MAX_STEPS = 300;
+    private LinkedList<Long> step_timestamps = new LinkedList<Long>();
 
-
-
-    private List<Overlay> mapOverlays;
-    private MapView mapView;
-    private Projection projection;
-
+    private static int IDLE_MODE = 90009;
+    private static int WALKING_MODE = 10001;
+    private static int JOGGING_MODE = 20002;
+    private static int RUNNING_MODE = 30003;
+    private int CURRENT_MODE = IDLE_MODE;
 
     String weatherData;
     DecimalFormat dForm = new DecimalFormat("#.###");
@@ -169,6 +173,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 	    title=(TextView)findViewById(R.id.name);
 	    tv3=(TextView)findViewById(R.id.weatherval);
         tv4 = (TextView)findViewById(R.id.stepcount);
+        tv1 =(TextView)findViewById(R.id.activity);
+        tv2 =(TextView)findViewById(R.id.stepsmin);
         title.setText(R.string.app_name);
 	    tv3.setText(weatherData);
 
@@ -184,6 +190,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 	  @Override
 	  public final void onSensorChanged(SensorEvent event) 
 	  {
+          long currentTimestamp = System.currentTimeMillis();
           if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
               gravity = event.values;
           }
@@ -191,7 +198,7 @@ public class MainActivity extends Activity implements SensorEventListener {
               magnet = event.values;
           }
           if (gravity != null && magnet != null && event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION){
-              processAccelerationData(event.values);
+              processAccelerationData(event.values, currentTimestamp);
           }
         /*
 	    try
@@ -206,7 +213,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 	    
 	  }
 
-    protected void processAccelerationData(float[] data)
+    protected void processAccelerationData(float[] data, long currentTimeStamp)
     {
 
         linAcceleration[0]= data[0];
@@ -244,6 +251,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             if (threshold > 50) {
                 threshold = 0;
                 step++;
+                setMode(currentTimeStamp);
             }
         }
 
@@ -253,6 +261,33 @@ public class MainActivity extends Activity implements SensorEventListener {
         //tv1.setText("Y axis" + "\t\t" +linAcceleration[1]);
         //tv2.setText("Z axis" +"\t\t" +linAcceleration[2]);
         tv4.setText("Step count " +"\t\t" +step);
+    }
+
+    private void setMode(long currentTimeStamp)
+    {
+        step_timestamps.add(currentTimeStamp);
+        long iterator = step_timestamps.getFirst();
+        while (currentTimeStamp-iterator> 60000)
+        {
+            step_timestamps.removeFirst();
+            iterator = step_timestamps.getFirst();
+        }
+
+        int num_steps_last_minute = step_timestamps.size();
+
+        if (num_steps_last_minute == DEFAULT_IDLE)
+            CURRENT_MODE = IDLE_MODE;
+        else if (num_steps_last_minute > DEFAULT_IDLE && num_steps_last_minute <= DEFAULT_WALKING_MAX_STEPS)
+            CURRENT_MODE = WALKING_MODE;
+        else if (num_steps_last_minute > DEFAULT_WALKING_MAX_STEPS && num_steps_last_minute <= DEFAULT_JOGGING_MAX_STEPS)
+            CURRENT_MODE = JOGGING_MODE;
+        else if (num_steps_last_minute > DEFAULT_JOGGING_MAX_STEPS)
+            CURRENT_MODE = RUNNING_MODE;
+
+        String current_activity = CURRENT_MODE == IDLE_MODE ? "Idle" : CURRENT_MODE == WALKING_MODE ? "Walking" : CURRENT_MODE == JOGGING_MODE ? "Jogging" : "Running";
+
+        tv1.setText(current_activity);
+        tv2.setText(""+num_steps_last_minute);
     }
 
 	  @Override
