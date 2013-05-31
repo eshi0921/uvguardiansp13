@@ -1,6 +1,7 @@
 package com.example.navidration;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -10,24 +11,16 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.content.Context;
-import android.widget.RelativeLayout;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
-import android.opengl.*;
-
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import android.graphics.*;
-import com.google.android.maps.*;
 
 public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager mSensorManager;
@@ -35,8 +28,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Sensor mGravity;
     private Sensor mMagnetic;
     TextView title,tv1,tv2, tv3, tv4;
+    Button buttonToMap;
 
-    private FileWriter writer;
 
     float[] gravity = null;
     float[] magnet = null;
@@ -172,11 +165,27 @@ public class MainActivity extends Activity implements SensorEventListener {
         tv4 = (TextView)findViewById(R.id.stepcount);
         tv1 =(TextView)findViewById(R.id.activity);
         tv2 =(TextView)findViewById(R.id.stepsmin);
+        buttonToMap = (Button) findViewById(R.id.button);
+        buttonToMap.setOnClickListener(buttonhandler);
         title.setText(R.string.app_name);
 	    tv3.setText(weatherData);
 
 	    
 	  }
+
+
+    View.OnClickListener buttonhandler=new View.OnClickListener() {
+
+        // Now I need to determine which button was clicked, and which intent or activity to launch.
+        public void onClick(View v) {
+            switch(v.getId()) {
+                case R.id.button:
+                    Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
+                    startActivity(mapIntent);
+                    break;
+            }
+        }
+    };
 
 	  @Override
 	  public final void onAccuracyChanged(Sensor sensor, int accuracy)
@@ -197,17 +206,6 @@ public class MainActivity extends Activity implements SensorEventListener {
           if (gravity != null && magnet != null && event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION){
               processAccelerationData(event.values, currentTimestamp);
           }
-        /*
-	    try
-	    {
-	    	writer.write(""+x+","+y+","+z);
-	    	writer.append(System.getProperty("line.separator"));
-	    }
-	    catch (Exception ex)
-	    {
-	    }
-	    */
-	    
 	  }
 
     protected void processAccelerationData(float[] data, long currentTimeStamp)
@@ -248,13 +246,6 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         }
 
-        //display values using TextView
-
-        //tv.setText("X axis" +"\t\t"+linAcceleration[0]);
-        //tv1.setText("Y axis" + "\t\t" +linAcceleration[1]);
-        //tv2.setText("Z axis" +"\t\t" +linAcceleration[2]);
-
-
         if (prev_timestamp != -1 && currentTimeStamp-prev_timestamp > 1000)
         {
             long iterator = step_timestamps.getFirst();
@@ -290,17 +281,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 	    mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_FASTEST);
-          /*
-	    try
-	    {
-	    	File writeTo = new File(android.os.Environment.getExternalStorageDirectory(), "accelerometer_data.txt");
-	    	if (!writeTo.exists())
-	    		writeTo.createNewFile();
-	    	writer = new FileWriter(writeTo,true);
-	    }
-	    catch (Exception ex)
-	    {
-	    }*/
 	    
 	  }
 
@@ -308,17 +288,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 	  protected void onPause() {
 	    super.onPause();
 	    mSensorManager.unregisterListener(this);
-	    if(writer != null)
-	    {
-	    	try
-	    	{
-	    			writer.flush();
-	    			writer.close();
-	    	}
-	    	catch (Exception ex)
-	    	{
-	    	}
-	    }
 	  }
 	  
 	  

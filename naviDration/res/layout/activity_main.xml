@@ -13,7 +13,6 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     />
- 
 
 
     <TextView
@@ -31,8 +30,30 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/weatherval"
             />
-        
-    
-    
-   
+
+    <TextView
+            android:textSize="20dp"
+            android:id="@+id/activity"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/stepcount"
+            />
+
+    <TextView
+            android:textSize="20dp"
+            android:id="@+id/stepsmin"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/activity"
+            />
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Map"
+            android:id="@+id/button"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"/>
+
+
 </RelativeLayout>
