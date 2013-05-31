@@ -60,6 +60,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private static int JOGGING_MODE = 20002;
     private static int RUNNING_MODE = 30003;
     private int CURRENT_MODE = IDLE_MODE;
+    private long prev_timestamp = -1;
 
     String weatherData;
     DecimalFormat dForm = new DecimalFormat("#.###");
@@ -93,7 +94,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 				  Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				  double longitude = Double.valueOf(dForm.format(location.getLongitude()));
 				  double latitude = Double.valueOf(dForm.format(location.getLatitude()));
-				  System.out.println("Location: " +longitude+" "+latitude);
 				  URL url = null;
 				  String data= "";
 				  BufferedReader in = null;
@@ -117,8 +117,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 			                
 			                String tempF = weather_json.getJSONObject("data").getJSONArray("current_condition").getJSONObject(0).getString("temp_F");
 			                String humidity = weather_json.getJSONObject("data").getJSONArray("current_condition").getJSONObject(0).getString("humidity");
-			                System.out.println("Weather tempC: "+tempF);
-			                System.out.println("Weather humidity: "+humidity);
 			                weatherData = tempF+","+humidity;
 			            }
                         weatherDataRetrieved = true;
@@ -140,36 +138,35 @@ public class MainActivity extends Activity implements SensorEventListener {
 				return null;
 			}
 		}
-	  
-	  
+
 	  
 	  
 	  @Override
 	  public final void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    setContentView(R.layout.activity_main);
-          System.out.println("Creating!");
 	    mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 	    mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         mGravity= mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 	    mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 	    //get layout
-	    WeatherAsyncTask task = new WeatherAsyncTask();
-	    task.execute();
+	    WeatherAsyncTask wTask = new WeatherAsyncTask();
+
+	    wTask.execute();
         while (!weatherDataRetrieved)
           {
             try
             {
-            task.get(1000, TimeUnit.MILLISECONDS);
+            wTask.get(1000, TimeUnit.MILLISECONDS);
             }
             catch (Exception ex)
             {
 
             }
           }
+
 	    //get textviews
-        System.out.println("Got weather data!");
 	    title=(TextView)findViewById(R.id.name);
 	    tv3=(TextView)findViewById(R.id.weatherval);
         tv4 = (TextView)findViewById(R.id.stepcount);
@@ -219,21 +216,15 @@ public class MainActivity extends Activity implements SensorEventListener {
         linAcceleration[0]= data[0];
         linAcceleration[1] = data[1];
         linAcceleration[2] = data[2];
-        System.out.print("Before matrices");
         SensorManager.getRotationMatrix(inR, null, gravity, magnet);
-        System.out.print("1 matrices");
         android.opengl.Matrix.invertM(outR, 0, inR, 0);
-        System.out.print("2 matrices");
         if (0.9 < outR[6] && outR[6] < 1.1 ) {
-            System.out.print("Returned!");
             return;
         }
         float[] result = new float[4];
-        System.out.print("3 matrices");
         android.opengl.Matrix.multiplyMV(result, 0, outR, 0, linAcceleration, 0);
-        System.out.print("4 matrices");
         float xyAcceleration = android.util.FloatMath.sqrt(result[0]*result[0] + result[1]*result[1]);
-
+        boolean stepCounted = false;
         if (xyAcceleration > 1.3) {
             if (localMax < result[2]) {
                 localMax = result[2];
@@ -251,7 +242,9 @@ public class MainActivity extends Activity implements SensorEventListener {
             if (threshold > 50) {
                 threshold = 0;
                 step++;
-                setMode(currentTimeStamp);
+                stepCounted = true;
+                step_timestamps.add(currentTimeStamp);
+
             }
         }
 
@@ -260,34 +253,34 @@ public class MainActivity extends Activity implements SensorEventListener {
         //tv.setText("X axis" +"\t\t"+linAcceleration[0]);
         //tv1.setText("Y axis" + "\t\t" +linAcceleration[1]);
         //tv2.setText("Z axis" +"\t\t" +linAcceleration[2]);
-        tv4.setText("Step count " +"\t\t" +step);
-    }
 
-    private void setMode(long currentTimeStamp)
-    {
-        step_timestamps.add(currentTimeStamp);
-        long iterator = step_timestamps.getFirst();
-        while (currentTimeStamp-iterator> 60000)
+
+        if (prev_timestamp != -1 && currentTimeStamp-prev_timestamp > 1000)
         {
-            step_timestamps.removeFirst();
-            iterator = step_timestamps.getFirst();
+            long iterator = step_timestamps.getFirst();
+            while (currentTimeStamp-60000>iterator)
+            {
+                step_timestamps.removeFirst();
+                iterator = step_timestamps.getFirst();
+            }
+
+            int num_steps_last_minute = step_timestamps.size();
+
+            if (num_steps_last_minute == DEFAULT_IDLE)
+                CURRENT_MODE = IDLE_MODE;
+            else if (num_steps_last_minute > DEFAULT_IDLE && num_steps_last_minute <= DEFAULT_WALKING_MAX_STEPS)
+                CURRENT_MODE = WALKING_MODE;
+            else if (num_steps_last_minute > DEFAULT_WALKING_MAX_STEPS && num_steps_last_minute <= DEFAULT_JOGGING_MAX_STEPS)
+                CURRENT_MODE = JOGGING_MODE;
+            else if (num_steps_last_minute > DEFAULT_JOGGING_MAX_STEPS)
+                CURRENT_MODE = RUNNING_MODE;
+
         }
-
-        int num_steps_last_minute = step_timestamps.size();
-
-        if (num_steps_last_minute == DEFAULT_IDLE)
-            CURRENT_MODE = IDLE_MODE;
-        else if (num_steps_last_minute > DEFAULT_IDLE && num_steps_last_minute <= DEFAULT_WALKING_MAX_STEPS)
-            CURRENT_MODE = WALKING_MODE;
-        else if (num_steps_last_minute > DEFAULT_WALKING_MAX_STEPS && num_steps_last_minute <= DEFAULT_JOGGING_MAX_STEPS)
-            CURRENT_MODE = JOGGING_MODE;
-        else if (num_steps_last_minute > DEFAULT_JOGGING_MAX_STEPS)
-            CURRENT_MODE = RUNNING_MODE;
-
+        if (stepCounted)
+            prev_timestamp = currentTimeStamp;
         String current_activity = CURRENT_MODE == IDLE_MODE ? "Idle" : CURRENT_MODE == WALKING_MODE ? "Walking" : CURRENT_MODE == JOGGING_MODE ? "Jogging" : "Running";
-
         tv1.setText(current_activity);
-        tv2.setText(""+num_steps_last_minute);
+        tv4.setText("Step count " +"\t\t" +step);
     }
 
 	  @Override
@@ -297,6 +290,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 	    mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_FASTEST);
         mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_FASTEST);
+          /*
 	    try
 	    {
 	    	File writeTo = new File(android.os.Environment.getExternalStorageDirectory(), "accelerometer_data.txt");
@@ -306,7 +300,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 	    }
 	    catch (Exception ex)
 	    {
-	    }
+	    }*/
 	    
 	  }
 
