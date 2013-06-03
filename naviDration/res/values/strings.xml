@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">naviDration</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name" >navidration</string>
+    <string name="action_settings" >Settings</string>
+    <string name="hello_world" >Hello world!</string>
+    <string name="button_tracking_on">Start Tracking</string>
+    <string name="button_tracking_off">Stop Tracking</string>
+    <string name="button_name_menu">Menu</string>
+    <string name="title_activity_menu">Home</string>
+    <string name="title_activity_profile">My Profile</string>
+    <string name="title_activity_tracking">Tracking</string>
+    <string name="title_activity_map">Map</string>
+    <string name="button_menu_history">Activity History</string>
+    <string name="button_menu_profile">My Profile</string>
+    <string name="button_menu_map">Map</string>
+    <string name="button_menu_tracking">Activity Tracking</string>
 
 </resources>

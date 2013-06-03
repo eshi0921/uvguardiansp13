@@ -34,7 +34,36 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.example.navidration.MapActivity"/>
+        <activity android:name="com.example.navidration.menu"
+                android:label="@string/title_activity_menu"/>
+
+
+        <activity
+                android:name="com.example.navidration.profile"
+                android:label="@string/title_activity_profile"
+                android:parentActivityName="com.example.navidration.menu" >
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.navidration.menu" />
+        </activity>
+        <activity
+                android:name="com.example.navidration.tracking"
+                android:label="@string/title_activity_tracking"
+                android:parentActivityName="com.example.navidration.menu" >
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.navidration.menu" />
+        </activity>
+        <activity
+                android:name="com.example.navidration.map"
+                android:label="@string/title_activity_map"
+                android:parentActivityName="com.example.navidration.menu" >
+            <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.navidration.menu" />
+        </activity>
+
+
         <uses-library android:name="com.google.android.maps" />
         <meta-data
                 android:name="com.google.android.maps.v2.API_KEY"

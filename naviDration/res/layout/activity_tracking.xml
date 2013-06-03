@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/button_name_menu"
+            android:id="@+id/button"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:onClick="load_menu"/>
+
+    <ToggleButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="New ToggleButton"
+            android:id="@+id/toggleButton"
+            android:textOn="@string/button_tracking_off"
+            android:textOff="@string/button_tracking_on"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="80dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginRight="58dp"
+            android:layout_marginBottom="20dp"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Current Hydration Level: ---"
+            android:id="@+id/textView"
+            android:layout_above="@+id/toggleButton"
+            android:layout_centerHorizontal="true"
+            android:paddingBottom="15dp"/>
+
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Time Elapsed: --"
+            android:id="@+id/textView2"
+            android:layout_above="@+id/textView"
+            android:layout_centerHorizontal="true"/>
+
+    <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Water Consumed"
+            android:id="@+id/button_drink"
+            android:layout_below="@+id/toggleButton"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="80dp"
+            android:layout_marginRight="80dp"
+            android:onClick="input_drink"
+            android:singleLine="true"/>
+
+</RelativeLayout>

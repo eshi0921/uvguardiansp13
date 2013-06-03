@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:gravity="top"
+        android:dividerPadding="20dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:paddingTop="30dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp">
+
+    <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Weight: "
+                android:id="@+id/textView"
+                />
+
+        <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/editText"
+                android:numeric="integer"
+                android:paddingRight="0dp"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="lbs"
+                android:id="@+id/textView5"
+                android:layout_row="0"
+                android:layout_column="2"
+                android:layout_columnSpan="2"/>
+
+    </GridLayout>
+
+    <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Walking is:  "
+                android:id="@+id/textView2"/>
+
+        <RadioGroup
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal"
+                android:id="@+id/RG_walking">
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Easy"
+                    android:id="@+id/Button_walk_easy"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:checked="true"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium"
+                    android:id="@+id/Button_walk_med"
+                    android:layout_row="0"
+                    android:layout_column="2"
+                    android:checked="false"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hard"
+                    android:id="@+id/Button_walk_hard"
+                    android:layout_row="0"
+                    android:layout_column="3"
+                    android:checked="false"/>
+        </RadioGroup>
+
+    </GridLayout>
+
+    <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Jogging is:  "
+                android:id="@+id/textView3"/>
+
+        <RadioGroup
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal"
+                android:id="@+id/RG_jogging"
+                android:focusableInTouchMode="true">
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Easy"
+                    android:id="@+id/Button_jog_easy"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:checked="false"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium"
+                    android:id="@+id/Button_jog_med"
+                    android:layout_row="0"
+                    android:layout_column="2"
+                    android:checked="true"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hard"
+                    android:id="@+id/Button_jog_hard"
+                    android:layout_row="0"
+                    android:layout_column="3"
+                    android:checked="false"/>
+        </RadioGroup>
+
+    </GridLayout>
+
+    <GridLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/gridLayout"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Running is:  "
+                android:id="@+id/textView4"/>
+
+        <RadioGroup
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="horizontal"
+                android:id="@+id/RG_running"
+                android:focusableInTouchMode="false">
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Easy"
+                    android:id="@+id/Button_run_easy"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:checked="false"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medium"
+                    android:id="@+id/Button_run_med"
+                    android:layout_row="0"
+                    android:layout_column="2"
+                    android:checked="true"/>
+
+            <RadioButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hard"
+                    android:id="@+id/Button_run_hard"
+                    android:layout_row="0"
+                    android:layout_column="3"
+                    android:checked="false"/>
+        </RadioGroup>
+
+    </GridLayout>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:id="@+id/button"
+            android:layout_gravity="right|center_vertical"
+            android:onClick="save_profile"/>
+
+</LinearLayout>

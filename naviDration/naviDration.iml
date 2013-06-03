@@ -4,6 +4,12 @@
     <facet type="android" name="Android">
       <configuration>
         <option name="UPDATE_PROPERTY_FILES" value="true" />
+        <notImportedProperties>
+          <property>MANIFEST_FILE_PATH</property>
+          <property>RESOURCES_DIR_PATH</property>
+          <property>ASSETS_DIR_PATH</property>
+          <property>NATIVE_LIBS_DIR_PATH</property>
+        </notImportedProperties>
       </configuration>
     </facet>
   </component>
@@ -15,6 +21,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="android-support-v4" level="project" />
   </component>
 </module>
 

@@ -180,7 +180,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         public void onClick(View v) {
             switch(v.getId()) {
                 case R.id.button:
-                    Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
+                    Intent mapIntent = new Intent(MainActivity.this, map.class);
                     startActivity(mapIntent);
                     break;
             }
