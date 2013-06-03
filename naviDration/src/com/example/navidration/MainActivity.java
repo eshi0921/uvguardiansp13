@@ -21,7 +21,9 @@ import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
+import android.support.v4.app.FragmentActivity;
 
+@SuppressWarnings("unused")
 public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -165,8 +167,6 @@ public class MainActivity extends Activity implements SensorEventListener {
         tv4 = (TextView)findViewById(R.id.stepcount);
         tv1 =(TextView)findViewById(R.id.activity);
         tv2 =(TextView)findViewById(R.id.stepsmin);
-        buttonToMap = (Button) findViewById(R.id.button);
-        buttonToMap.setOnClickListener(buttonhandler);
         title.setText(R.string.app_name);
 	    tv3.setText(weatherData);
 
@@ -174,18 +174,11 @@ public class MainActivity extends Activity implements SensorEventListener {
 	  }
 
 
-    View.OnClickListener buttonhandler=new View.OnClickListener() {
-
-        // Now I need to determine which button was clicked, and which intent or activity to launch.
-        public void onClick(View v) {
-            switch(v.getId()) {
-                case R.id.button:
-                    Intent mapIntent = new Intent(MainActivity.this, MapActivity.class);
-                    startActivity(mapIntent);
-                    break;
-            }
-        }
-    };
+    // Now I need to determine which button was clicked, and which intent or activity to launch.
+    public void openMap(View v) {
+        Intent mapIntent = new Intent(this, MapTest.class);
+        startActivity(mapIntent);
+    }
 
 	  @Override
 	  public final void onAccuracyChanged(Sensor sensor, int accuracy)

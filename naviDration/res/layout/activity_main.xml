@@ -52,6 +52,7 @@
             android:layout_height="wrap_content"
             android:text="Map"
             android:id="@+id/button"
+            android:onClick="openMap"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"/>
 
