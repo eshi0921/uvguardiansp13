@@ -32,13 +32,13 @@ public class menu extends Activity {
 
     public void load_profile(View view)
     {
-        Intent intent = new Intent(this, menu.class);
+        Intent intent = new Intent(this, profile.class);
         startActivity(intent);
     }
 
     public void load_map(View view)
     {
-        Intent intent = new Intent(this, map.class);
+        Intent intent = new Intent(this, MapTest.class);
         startActivity(intent);
     }
 

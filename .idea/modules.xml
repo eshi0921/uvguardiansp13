@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../google-play-services_lib/google-play-services_lib.iml" filepath="$PROJECT_DIR$/../google-play-services_lib/google-play-services_lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/naviDration/naviDration.iml" filepath="$PROJECT_DIR$/naviDration/naviDration.iml" />
+      <module fileurl="file://$PROJECT_DIR$/uvguardiansp13.iml" filepath="$PROJECT_DIR$/uvguardiansp13.iml" />
     </modules>
   </component>
 </project>
