@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="user_profile" >
+        <EditTextPreference
+                android:title="weight"
+                android:key="setWeight"/>
+
+
+        <EditTextPreference
+                android:key="prefWalking"
+                android:title="Walking" />
+
+        <EditTextPreference
+                android:key="prefWalkingValue"
+                android:title="WalkingValue" />
+
+        <EditTextPreference
+                android:key="prefJogging"
+                android:title="Jogging" />
+
+        <EditTextPreference
+                android:key="prefJoggingValue"
+                android:title="JoggingValue" />
+
+        <EditTextPreference
+                android:key="prefRunning"
+                android:title="Running" />
+        <EditTextPreference
+                android:key="prefRunningValue"
+                android:title="Running" />
+
+
+    </PreferenceCategory>
+
+
+
+</PreferenceScreen>

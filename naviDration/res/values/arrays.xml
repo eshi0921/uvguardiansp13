@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="walkingOptions">
+        <item>easy</item>
+        <item>medium</item>
+        <item>hard</item>
+    </string-array>
+    <string-array name="joggingOptions">
+        <item>easy</item>
+        <item>medium</item>
+        <item>hard</item>
+    </string-array>
+    <string-array name="runningOptions">
+        <item>easy</item>
+        <item>medium</item>
+        <item>hard</item>
+    </string-array>
+
+</resources>

@@ -16,6 +16,7 @@
 
     <ToggleButton
             android:layout_width="match_parent"
+            android:onClick="tracking_clicked"
             android:layout_height="wrap_content"
             android:text="New ToggleButton"
             android:id="@+id/toggleButton"
@@ -33,7 +34,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Current Hydration Level: ---"
-            android:id="@+id/textView"
+            android:id="@+id/tvHydrate"
             android:layout_above="@+id/toggleButton"
             android:layout_centerHorizontal="true"
             android:paddingBottom="15dp"/>
@@ -43,8 +44,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Time Elapsed: --"
-            android:id="@+id/textView2"
-            android:layout_above="@+id/textView"
+            android:id="@+id/tvTime"
+            android:layout_above="@+id/tvHydrate"
             android:layout_centerHorizontal="true"/>
 
     <Button
