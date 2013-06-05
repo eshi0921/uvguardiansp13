@@ -1,5 +1,17 @@
 package com.example.navidration;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import com.example.navidration.R;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient.ConnectionCallbacks;
@@ -11,10 +23,15 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
+import android.content.Context;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.widget.Toast;
 
 /**
  * Created by Byte on 5/31/13.
@@ -23,8 +40,96 @@ public class MapTest extends FragmentActivity
 	implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
 	private GoogleMap mMap;
-	
 	private LocationClient mLocationClient;
+	private List<Fountain> mWaterFountains;
+	private List<Marker> mMarkers;
+	
+	boolean wfDataRetrieved;
+	
+	private class WaterFountainAsyncTask extends AsyncTask<LatLng, Integer, Void>{
+
+		
+		@Override
+		protected void onPreExecute() {
+		// update the UI immediately after the task is executed
+			super.onPreExecute();
+			wfDataRetrieved = false;
+
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			super.onProgressUpdate(values);
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			wfDataRetrieved = true;
+		}
+		
+		@Override
+		protected Void doInBackground(LatLng... params) {
+	    	URL url = null;
+	    	String rawdata = "";
+	    	InputStreamReader reader = null;
+	    	BufferedReader buffer = null;
+	    	//System.out.println("RETRIEVING WF");
+	    	if (mWaterFountains == null)
+	    		mWaterFountains = new ArrayList<Fountain>();
+	    	try {
+	    		String dbURL = "http://209.141.35.124/getWaterFountain.php?dbpass=uvguardian13&latitude="+params[0].latitude+"&longitude="+params[0].longitude;
+	    		url = new URL(dbURL);
+				HttpURLConnection fountainDBConnection = (HttpURLConnection) url.openConnection();
+				if (fountainDBConnection != null) {
+					fountainDBConnection.setDoInput(true);
+				}
+	    		InputStream stream = fountainDBConnection.getInputStream();
+	    		reader = new InputStreamReader(stream);
+	    		buffer = new BufferedReader(reader);
+	    		rawdata = buffer.readLine();
+	    		if (rawdata != null)
+	    		{
+	    			System.out.println(rawdata);
+	    			String[] fountains = rawdata.split(";");
+	    			for (int i = 0; i < fountains.length; i++) {
+	    				String[] attribs = fountains[i].split(",");
+	    				System.out.println("Adding WF!");
+	    				mWaterFountains.add(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
+	    													Double.parseDouble(attribs[Fountain.LATITUDE]),
+	    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
+	    													Integer.parseInt(attribs[Fountain.NYES]),
+	    													Integer.parseInt(attribs[Fountain.NNO])));
+	    			}
+	    		}
+	    		else
+	    		{
+	    			System.out.println("NO FOUNTAINS NEARBY");
+	    			displayMessage("No water fountains nearby");
+	    		}
+	    		reader.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+                displayMessage(e.getMessage());
+			} finally {
+	            if (reader != null){
+	                try{
+	                    reader.close();
+	                }catch (Exception e){
+	                    e.printStackTrace();
+	                    displayMessage(e.getMessage());
+	                }
+	            }
+			}
+	    	return null;
+		}
+		
+		private void displayMessage(String msg)
+		{
+			Context context = getApplicationContext();
+			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
+		}
+	}
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +194,7 @@ public class MapTest extends FragmentActivity
                 this); // OnConnectionFailedListener
         }
 	}
-    
+
 	@Override
 	public void onLocationChanged(Location arg0) {
 		// TODO Auto-generated method stub
@@ -108,8 +213,39 @@ public class MapTest extends FragmentActivity
 	    		REQUEST,
 	            this);  // LocationListener
       	Location loc = mLocationClient.getLastLocation();
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude())));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+      	if (mMap != null) {
+	        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude())));
+	        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+      	}
+        WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
+        wfTask.execute(new LatLng(loc.getLatitude(), loc.getLongitude()));
+        if (!wfDataRetrieved)
+        {
+			try {
+				wfTask.get(1000, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TimeoutException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        if (mMarkers == null) {
+        	mMarkers = new ArrayList<Marker>();
+        }
+        for (int i = 0; i < mWaterFountains.size(); i++)
+        {
+        	Fountain testFount = mWaterFountains.get(0);
+	        mMarkers.add(mMap.addMarker(new MarkerOptions()
+	        	.position(new LatLng(testFount.latitude, testFount.longitude))
+	        	.title("ID: "+testFount.id)
+	        	.snippet("Overall Rating: "+(testFount.nYes - testFount.nNo))
+	        	.draggable(true)));
+        }
 	}
 
 	@Override
