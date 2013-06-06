@@ -30,6 +30,11 @@
                 android:key="prefRunningValue"
                 android:title="Running" />
 
+        <EditTextPreference
+                android:key="prefUserID"
+                android:title="UserID" />
+
+
 
     </PreferenceCategory>
 

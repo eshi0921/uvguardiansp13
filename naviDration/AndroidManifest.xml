@@ -25,13 +25,10 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <activity
-            android:name="com.example.navidration.MainActivity"
-            android:label="@string/app_name" >
 
-        </activity>
         <activity android:name="com.example.navidration.menu"
-                android:label="@string/title_activity_menu">
+                android:label="@string/title_activity_menu"
+                android:screenOrientation="portrait">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
 
@@ -43,6 +40,7 @@
         <activity
                 android:name="com.example.navidration.profile"
                 android:label="@string/title_activity_profile"
+                android:screenOrientation="portrait"
                 android:parentActivityName="com.example.navidration.menu" >
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
@@ -51,6 +49,7 @@
         <activity
                 android:name="com.example.navidration.tracking"
                 android:label="@string/title_activity_tracking"
+                android:screenOrientation="portrait"
                 android:parentActivityName="com.example.navidration.menu" >
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
@@ -59,6 +58,7 @@
         <activity
                 android:name="com.example.navidration.map"
                 android:label="@string/title_activity_map"
+                android:screenOrientation="portrait"
                 android:parentActivityName="com.example.navidration.menu" >
             <meta-data
                     android:name="android.support.PARENT_ACTIVITY"

@@ -54,9 +54,9 @@ public class tracking extends Activity implements SensorEventListener {
     private float threshold = 0;
     private int step = 0;
 
-    private static int DEFAULT_WALKING_MAX_STEPS = 200;
+    private static int DEFAULT_WALKING_MAX_STEPS = 90;
     private static int DEFAULT_IDLE = 0;
-    private static int DEFAULT_JOGGING_MAX_STEPS = 300;
+    private static int DEFAULT_JOGGING_MAX_STEPS = 140;
     private LinkedList<Long> step_timestamps = new LinkedList<Long>();
 
     private static int IDLE_MODE = 90009;
@@ -68,7 +68,7 @@ public class tracking extends Activity implements SensorEventListener {
     private long start_timestamp = -1;
     public int dehydrationLevel;	// min: 1, max: 5
     Dehydration mDehydration;
-
+    private long lastTimeDrankWater = -1;
 
     int weatherTemperature = 0;
     int weatherHumidty = 0;
@@ -80,7 +80,7 @@ public class tracking extends Activity implements SensorEventListener {
     boolean isTracking = false;
 
 
-    TextView tvHydrate, tvTime;
+    TextView tvHydrate, tvTime, tvActivity;
 
     class Dehydration
     {
@@ -195,9 +195,9 @@ public class tracking extends Activity implements SensorEventListener {
 
         public void updateHydrationLevel()
         {
-            time = currentTime();
+            time = currentTime()-((int) lastTimeDrankWater/1000);
             bwl = calcBodyWeightLoss ();
-
+            System.out.println("Body weight loss: "+bwl);
             // 5 levels of dehydration
             if (bwl <= 2)
                 dehydrationLevel = 1;
@@ -209,6 +209,7 @@ public class tracking extends Activity implements SensorEventListener {
                 dehydrationLevel = 4;
             else
                 dehydrationLevel = 5;
+            System.out.println("Dehydration Level: "+dehydrationLevel);
         }
     }
 
@@ -339,6 +340,7 @@ public class tracking extends Activity implements SensorEventListener {
 
         tvHydrate = (TextView)findViewById(R.id.tvHydrate);
         tvTime = (TextView) findViewById(R.id.tvTime);
+        tvActivity = (TextView) findViewById(R.id.tvActivity);
     }
 
 
@@ -357,6 +359,7 @@ public class tracking extends Activity implements SensorEventListener {
             //RUNNING
             isTracking = true;
             start_timestamp = System.currentTimeMillis();
+            lastTimeDrankWater = start_timestamp;
             mTimer = new Timer();
             mTimer.schedule(new timeTask(), 0,500);
         } else {
@@ -367,6 +370,11 @@ public class tracking extends Activity implements SensorEventListener {
 
         }
     }
+
+    public void input_drink(View view){
+        lastTimeDrankWater = System.currentTimeMillis();
+    }
+
 
 
     @Override
@@ -425,7 +433,6 @@ public class tracking extends Activity implements SensorEventListener {
                 threshold = 0;
                 step++;
                 stepCounted = true;
-                System.out.println("Step: "+step);
                 step_timestamps.add(currentTimeStamp);
 
             }
@@ -441,6 +448,7 @@ public class tracking extends Activity implements SensorEventListener {
             }
 
             int num_steps_last_minute = step_timestamps.size();
+            System.out.println(num_steps_last_minute);
 
 
 
@@ -452,7 +460,8 @@ public class tracking extends Activity implements SensorEventListener {
                 CURRENT_MODE = JOGGING_MODE;
             else if (num_steps_last_minute > DEFAULT_JOGGING_MAX_STEPS)
                 CURRENT_MODE = RUNNING_MODE;
-
+            String current_activity = CURRENT_MODE == IDLE_MODE ? "Idle" : CURRENT_MODE == WALKING_MODE ? "Walking" : CURRENT_MODE == JOGGING_MODE ? "Jogging" : "Running";
+            tvActivity.setText("Current Activity: "+current_activity);
 
 
         }
@@ -461,12 +470,12 @@ public class tracking extends Activity implements SensorEventListener {
             prev_timestamp = currentTimeStamp;
             mDehydration.updateHydrationLevel();
 
-            String dehydrationMessage;
+            String dehydrationMessage = "Low risk";
             if (dehydrationLevel <= 2)
                 dehydrationMessage = "Low risk";
             else if (dehydrationLevel == 3)
                 dehydrationMessage = "Moderate risk";
-            else
+            else if (dehydrationLevel >= 4)
                 dehydrationMessage = "High risk";
 
             tvHydrate.setText("Current Hydration Level: "+dehydrationMessage);
