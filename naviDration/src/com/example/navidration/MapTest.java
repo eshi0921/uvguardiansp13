@@ -6,8 +6,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -19,42 +20,52 @@ import com.google.android.gms.common.GooglePlayServicesClient.OnConnectionFailed
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
  * Created by Byte on 5/31/13.
  */
 public class MapTest extends FragmentActivity
-	implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+	implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener, OnInfoWindowClickListener, FountainPrompt.FountainPromptListener {
 
+	static int RADIO_REQUEST = 123;
+	
 	private GoogleMap mMap;
 	private LocationClient mLocationClient;
-	private List<Fountain> mWaterFountains;
-	private List<Marker> mMarkers;
+	private Map<Fountain,Marker> mFountainMarkers;
 	
 	boolean wfDataRetrieved;
 	
-	private class WaterFountainAsyncTask extends AsyncTask<LatLng, Integer, Void>{
-
+	private class WaterFountainAsyncTask extends AsyncTask<String, Integer, Void>{
 		
 		@Override
 		protected void onPreExecute() {
 		// update the UI immediately after the task is executed
 			super.onPreExecute();
 			wfDataRetrieved = false;
-
 		}
 
 		@Override
@@ -69,16 +80,15 @@ public class MapTest extends FragmentActivity
 		}
 		
 		@Override
-		protected Void doInBackground(LatLng... params) {
+		protected Void doInBackground(String... params) {
 	    	URL url = null;
 	    	String rawdata = "";
 	    	InputStreamReader reader = null;
 	    	BufferedReader buffer = null;
 	    	//System.out.println("RETRIEVING WF");
-	    	if (mWaterFountains == null)
-	    		mWaterFountains = new ArrayList<Fountain>();
+	    		
 	    	try {
-	    		String dbURL = "http://209.141.35.124/getWaterFountain.php?dbpass=uvguardian13&latitude="+params[0].latitude+"&longitude="+params[0].longitude;
+	    		String dbURL = params[0];
 	    		url = new URL(dbURL);
 				HttpURLConnection fountainDBConnection = (HttpURLConnection) url.openConnection();
 				if (fountainDBConnection != null) {
@@ -90,16 +100,19 @@ public class MapTest extends FragmentActivity
 	    		rawdata = buffer.readLine();
 	    		if (rawdata != null)
 	    		{
+	    	    	if (mFountainMarkers == null)
+	    	    		mFountainMarkers = new HashMap<Fountain,Marker>();
+	    	    	
 	    			System.out.println(rawdata);
 	    			String[] fountains = rawdata.split(";");
 	    			for (int i = 0; i < fountains.length; i++) {
 	    				String[] attribs = fountains[i].split(",");
 	    				System.out.println("Adding WF!");
-	    				mWaterFountains.add(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
+	    				mFountainMarkers.put(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
 	    													Double.parseDouble(attribs[Fountain.LATITUDE]),
 	    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
 	    													Integer.parseInt(attribs[Fountain.NYES]),
-	    													Integer.parseInt(attribs[Fountain.NNO])));
+	    													Integer.parseInt(attribs[Fountain.NNO])), null);
 	    			}
 	    		}
 	    		else
@@ -130,11 +143,62 @@ public class MapTest extends FragmentActivity
 			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 		}
 	}
+
+	private class FountainInfoWindowAdapter implements InfoWindowAdapter {
+
+		private final View mContents;
+		
+		FountainInfoWindowAdapter() {
+			mContents = getLayoutInflater().inflate(R.layout.fountain_contents, null);
+		}
+		
+		@Override
+		public View getInfoContents(Marker fountain) {
+			render(fountain, mContents);
+			return mContents;
+		}
+		
+		@Override
+		public View getInfoWindow(Marker fountain) {
+			return null;
+		}
+		
+		private void render(Marker marker, View view) {
+            String title = marker.getTitle();
+            TextView titleUi = ((TextView) view.findViewById(R.id.title));
+            if (title != null) {
+                // Spannable string allows us to edit the formatting of the text.
+                SpannableString titleText = new SpannableString(title);
+                titleText.setSpan(new ForegroundColorSpan(Color.DKGRAY), 0, titleText.length(), 0);
+                titleUi.setText(titleText);
+            } else {
+                titleUi.setText("");
+            }
+
+            String snippet = marker.getSnippet();
+            TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
+            if (snippet != null && snippet.length() > 12) {
+                SpannableString snippetText = new SpannableString(snippet);
+                snippetUi.setText(snippetText);
+            } else {
+                snippetUi.setText("");
+            }
+		}
+	}
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        
+        final Button button = (Button) findViewById(R.id.add);
+        button.setOnClickListener(new View.OnClickListener() {			
+			@Override
+			public void onClick(View arg0) {
+				FountainPrompt.newInstance(getString(R.string.add_fountain), getString(R.string.add), null)
+							  .show(getSupportFragmentManager(), getString(R.string.add_fountain));
+			}
+		});
     }
     
     @Override
@@ -182,6 +246,8 @@ public class MapTest extends FragmentActivity
             // Check if we were successful in obtaining the map.
             if (mMap != null) {
                 mMap.setMyLocationEnabled(true);
+                mMap.setInfoWindowAdapter(new FountainInfoWindowAdapter());
+                mMap.setOnInfoWindowClickListener(this);
             }
         }
     }
@@ -195,10 +261,46 @@ public class MapTest extends FragmentActivity
         }
 	}
 
+    private void addFountainMarkers() {
+        Iterator<Fountain> it = mFountainMarkers.keySet().iterator();
+        while (it.hasNext()) {
+        	Fountain f = (Fountain) it.next();
+        	mFountainMarkers.put(f, mMap.addMarker(new MarkerOptions()
+	        	.position(new LatLng(f.latitude, f.longitude))
+	        	.title("ID: "+f.id)
+	        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
+	        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain))));
+        	it.remove(); // avoid concurrent modification
+        }
+    }
 	@Override
-	public void onLocationChanged(Location arg0) {
-		// TODO Auto-generated method stub
-		
+	public void onLocationChanged(Location loc) {
+		if (loc != null)
+		{
+      		CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude()));
+	        mMap.moveCamera(center);
+	        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+		}
+		if (mFountainMarkers == null) {
+	        WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
+	        wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.get_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude());
+	        if (!wfDataRetrieved) {
+				try {
+					wfTask.get(1000, TimeUnit.MILLISECONDS);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (TimeoutException e) {
+					// TODO Auto-generated catch block
+					Toast.makeText(this, "Retrieving fountains timeout", Toast.LENGTH_SHORT).show();
+					e.printStackTrace();
+				}
+	        }
+	        addFountainMarkers();
+		}
 	}
 
 	@Override
@@ -212,45 +314,45 @@ public class MapTest extends FragmentActivity
 	    mLocationClient.requestLocationUpdates(
 	    		REQUEST,
 	            this);  // LocationListener
-      	Location loc = mLocationClient.getLastLocation();
-      	if (mMap != null) {
-	        mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude())));
-	        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
-      	}
-        WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
-        wfTask.execute(new LatLng(loc.getLatitude(), loc.getLongitude()));
-        if (!wfDataRetrieved)
-        {
-			try {
-				wfTask.get(1000, TimeUnit.MILLISECONDS);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ExecutionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TimeoutException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-        if (mMarkers == null) {
-        	mMarkers = new ArrayList<Marker>();
-        }
-        for (int i = 0; i < mWaterFountains.size(); i++)
-        {
-        	Fountain testFount = mWaterFountains.get(0);
-	        mMarkers.add(mMap.addMarker(new MarkerOptions()
-	        	.position(new LatLng(testFount.latitude, testFount.longitude))
-	        	.title("ID: "+testFount.id)
-	        	.snippet("Overall Rating: "+(testFount.nYes - testFount.nNo))
-	        	.draggable(true)));
-        }
 	}
 
 	@Override
 	public void onDisconnected() {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onInfoWindowClick(Marker marker) {
+		FountainPrompt fp = FountainPrompt.newInstance(getString(R.string.rate_fountain), getString(R.string.rate), marker);
+		fp.show(getSupportFragmentManager(), getString(R.string.rate_fountain));
+	}
+	
+	@Override
+	public void onDialogPositiveClick(FountainPrompt dialog) {
+		if (FountainPrompt.mMarker == null) {
+			if (mLocationClient.isConnected()) {
+				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
+				Location loc = mLocationClient.getLastLocation();
+				wfTask.execute("http://"+R.string.db_ip+"/"+R.string.rate_php+"?dbpass="+R.string.db_pass+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude());
+			}
+		}
+		else {
+			Fountain key = null;
+			for(Map.Entry<Fountain,Marker> entry : mFountainMarkers.entrySet()) {
+				if (FountainPrompt.mMarker.equals(entry.getValue())) {
+					key = entry.getKey();
+				}
+			}
+			if (mLocationClient.isConnected()) {
+				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
+				wfTask.execute("http://"+R.string.db_ip+"/"+R.string.rate_php+"?dbpass="+R.string.db_pass+"&id="+key.id+"&rating="+dialog.rating);
+			}
+		}
+	}
+	
+	@Override
+	public void onDialogNegativeClick(FountainPrompt dialog) {
 		
 	}
 }

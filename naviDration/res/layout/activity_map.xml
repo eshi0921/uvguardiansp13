@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-          android:id="@+id/map"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:name="com.google.android.gms.maps.SupportMapFragment"/>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MapActivity" >
+
+	<fragment xmlns:map="http://schemas.android.com/apl/res-auto"
+              android:id="@+id/map"
+	          android:layout_width="match_parent"
+	          android:layout_height="wrap_content"
+              android:scrollbars="vertical"
+	          class="com.google.android.gms.maps.SupportMapFragment"/>
+
+    <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_fountain"
+            android:id="@+id/add"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="6dp"
+            android:layout_marginLeft="6dp"
+            android:alpha="100"/>
+</FrameLayout>

@@ -15,5 +15,18 @@
     <string name="title_activity_tracking">naviDration: Activity</string>
     <string name="title_activity_menu">naviDration: Menu</string>
     <string name="title_activity_profile">naviDration: My Profile</string>
+    <string name="fountain_prompt">How\'s the water?</string>
+    <string name="cancel">Cancel</string>
+    <string name="rate">Rate</string>
+    <string name="rate_fountain">Rate Fountain</string>
+    <string name="drinkable">Drinkable</string>
+    <string name="avoid">Avoid</string>
+    <string name="add_fountain">Add Water Fountain</string>
+    <string name="add">Add</string>
+    <string name="db_ip">209.141.35.124</string>
+    <string name="get_php">getWaterFountain.php</string>
+    <string name="rate_php">rateWaterFountain.php</string>
+    <string name="add_php">addWaterFountain.php</string>
+    <string name="db_pass">uvguardian13</string>
 
 </resources>
