@@ -53,4 +53,13 @@
             android:onClick="input_drink"
             android:singleLine="true"/>
 
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Current Activity: Idle"
+            android:id="@+id/tvActivity"
+            android:layout_above="@+id/tvTime"
+            android:layout_centerHorizontal="true"/>
+
 </RelativeLayout>
