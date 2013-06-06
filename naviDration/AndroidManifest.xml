@@ -66,12 +66,18 @@
         </activity>
         <activity
                 android:name=".MapTest"
-                android:label="map_test"/>
+                android:screenOrientation="portrait"
+                android:label="@string/title_activity_map"
+                android:parentActivityName="com.example.navidration.menu" >
+                <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value="com.example.navidration.menu" />
+        </activity>
 
         <uses-library android:name="com.google.android.maps" />
         <meta-data
                 android:name="com.google.android.maps.v2.API_KEY"
-                android:value="AIzaSyAtsQ33bttidl-NR5NSQYNdh1tYn_FGM0U" />
+                android:value="AIzaSyCQIbHnBq3mt5QLyJjlkjEh8jqe3FWMH5k" />
     </application>
 
 </manifest>
