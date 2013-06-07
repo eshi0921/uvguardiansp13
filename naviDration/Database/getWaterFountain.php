@@ -14,20 +14,13 @@
 	$longitude = $_GET['longitude'];
 	$latitude = $_GET['latitude'];
 
-	function distance($lat1, $lon1, $lat2, $lon2, $unit) {
+	function distance($lat1, $lon1, $lat2, $lon2) {
 	  $theta = $lon1 - $lon2;
 	  $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
 	  $dist = acos($dist);
 	  $dist = rad2deg($dist);
 	  $miles = $dist * 60 * 1.1515;
-	  $unit = strtoupper($unit);
-	  if ($unit == "K") {
-		return ($miles * 1.609344);
-	  } else if ($unit == "N") {
-		  return ($miles * 0.8684);
-		} else {
-			return $miles;
-		  }
+		return $miles;
 	}
 	
 	$sql = 'SELECT * FROM Fountain_Location;' ;
@@ -42,18 +35,20 @@
 			die('There was an error running the query [' . $con->error . ']');
 		}
 
-		
+
 	while($row = $result->fetch_assoc()){
 		$fid = $row['Fount_ID'];
 		$f_longitude = $row['Longitude'];
 		$f_latitude = $row['Latitude'];
+		if (distance($latitude, $longitude, $f_latitude, $f_longitude) <= 1) {
 		
-		if (distance($latitude, $longitude, $f_latitude, $f_longitude, 'M') <= 1) {
 			$sqlY = 'SELECT Count(Rating) AS numYes FROM Fountain_Rating WHERE Fount_ID='.$fid.' AND Rating=\'Y\';';
 			$sqlN = 'SELECT Count(Rating) AS numNo FROM Fountain_Rating WHERE Fount_ID='.$fid.' AND Rating=\'N\';';
+
 			if(!$resultY = $con->query($sqlY)){
 				die('There was an error running the query [' . $con->error . ']');
 			}
+			
 			if(!$resultN = $con->query($sqlN)){
 				die('There was an error running the query [' . $con->error . ']');
 			}

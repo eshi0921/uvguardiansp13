@@ -1,11 +1,4 @@
-<html>
-	<head>
-		<title>
-		</title>
-	</head>
-	<body>
-		UserID:
-	<?php
+<?php
 		$config = parse_ini_file(__DIR__ . '/../config.ini', true);
 		$host = $config['database']['host'];
 		$user = $config['database']['user'];
@@ -47,8 +40,3 @@
 			echo $uid;
 		}
 	?>
-	
-
-	</body>
-</html>
-	
