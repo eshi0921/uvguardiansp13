@@ -14,7 +14,7 @@
             android:id="@+id/prompt"
             android:layout_gravity="center"
             android:textSize="24sp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="6dp"
             android:layout_marginBottom="12dp"/>
 
     <RadioGroup
@@ -23,7 +23,7 @@
             android:id="@+id/radio_group"
             android:orientation="vertical"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="17dp">
+            android:layout_marginBottom="12dp">
 
         <RadioButton
                 android:layout_width="wrap_content"
@@ -45,5 +45,13 @@
                 android:textSize="20sp"
                 android:layout_gravity="left"/>
     </RadioGroup>
+
+    <TextView
+            android:layout_width="186dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Fountain will be added at your current location"
+            android:id="@+id/additional"
+            android:layout_gravity="center"/>
 
 </LinearLayout>

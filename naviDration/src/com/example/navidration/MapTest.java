@@ -7,9 +7,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -32,7 +30,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
@@ -57,8 +54,8 @@ public class MapTest extends FragmentActivity
 	
 	private GoogleMap mMap;
 	private LocationClient mLocationClient;
-	private HashMap<Fountain,Marker> mFountainMarkers;
 	private ArrayList<Fountain> mFountains;
+	private Location mLocation;
 	
 	boolean wfDataRetrieved;
 	
@@ -110,9 +107,6 @@ public class MapTest extends FragmentActivity
 	    			{
 	    				if (mFountains == null)
 	    					mFountains = new ArrayList<Fountain>();
-	    				
-		    	    	if (mFountainMarkers == null)
-		    	    		mFountainMarkers = new HashMap<Fountain,Marker>();
 		    	    	
 	    				System.out.println(rawdata);
 		    			String[] fountains = rawdata.split(";");
@@ -121,12 +115,8 @@ public class MapTest extends FragmentActivity
 		    				System.out.println("Adding WF!");
 		    				System.out.println(fountains[i]);
 		    				System.out.println(fountains[i].length());
-		    				/**mFountainMarkers.put(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
-		    													Double.parseDouble(attribs[Fountain.LATITUDE]),
-		    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
-		    													Integer.parseInt(attribs[Fountain.NYES]),
-		    													Integer.parseInt(attribs[Fountain.NNO])), null);*/
-		    				if (attribs.length == 5) {
+
+		    				if (attribs.length == 5 && getFountainById(Integer.parseInt(attribs[Fountain.FOUNTAINID])) == null) {
 		    					mFountains.add(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
 		    													Double.parseDouble(attribs[Fountain.LATITUDE]),
 		    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
@@ -143,6 +133,7 @@ public class MapTest extends FragmentActivity
 	    				f.nYes = Integer.parseInt(attribs[1]);
 	    				f.nNo = Integer.parseInt(attribs[2].trim());
 	    			}
+	    			wfDataRetrieved = true;
 	    		}
 	    		reader.close();
 			} catch (IOException e) {
@@ -278,43 +269,33 @@ public class MapTest extends FragmentActivity
 	}
 
     private void addFountainMarkers() {
-        /**Iterator<Entry<Fountain,Marker>> it = mFountainMarkers.entrySet().iterator();
-        while (it.hasNext()) {
-        	Entry<Fountain,Marker> entry = (Entry<Fountain,Marker>) it.next();
-        	Fountain f = entry.getKey();
-        	it.remove();
-        	mFountainMarkers.put(f, mMap.addMarker(new MarkerOptions()
-	        	.position(new LatLng(f.latitude, f.longitude))
-	        	.title("ID: "+f.id)
-	        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
-	        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain))));
-        }*/
     	Iterator<Fountain> it = mFountains.iterator();
     	while (it.hasNext()) {
     		Fountain f = it.next();
-    		mFountainMarkers.put(f, mMap.addMarker(new MarkerOptions()
-	        	.position(new LatLng(f.latitude, f.longitude))
-	        	.title("ID: "+f.id)
-	        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
-	        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain))));
+    		if (f.mMarker == null) {
+	    		f.mMarker = mMap.addMarker(new MarkerOptions()
+		        	.position(new LatLng(f.latitude, f.longitude))
+		        	.title("ID: "+f.id)
+		        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
+		        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain)));
+    		}
     	}
     }
 	@Override
 	public void onLocationChanged(Location loc) {
-		if (loc != null)
+		if (mLocation == null || mLocation.distanceTo(loc) > 1000)
 		{
+			mLocation = loc;
       		CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(loc.getLatitude(), loc.getLongitude()));
 	        mMap.moveCamera(center);
 	        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
 		}
-		if (mFountainMarkers == null) {
+		if (mFountains == null) {
 	        WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
 	        wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.get_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude(), getString(R.string.get_php));
-	        if (!wfDataRetrieved) {
+	        while (!wfDataRetrieved) {
 				try {
 					wfTask.get(1000, TimeUnit.MILLISECONDS);
-					if (wfDataRetrieved)
-						wfDataRetrieved = false;
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -327,10 +308,9 @@ public class MapTest extends FragmentActivity
 					e.printStackTrace();
 				}
 	        }
-		}
-        
-		if (wfDataRetrieved)
 			addFountainMarkers();
+			wfDataRetrieved = false;
+		}
 	}
 
 	@Override
@@ -367,14 +347,9 @@ public class MapTest extends FragmentActivity
 				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
 				Location loc = mLocationClient.getLastLocation();
 				wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.add_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude()+"&rating="+dialog.rating+"&uid="+pref.getString("prefUserID", "-1"), getString(R.string.add_php));
-		        if (!wfDataRetrieved) {
+		        while (!wfDataRetrieved) {
 					try {
 						wfTask.get(1000, TimeUnit.MILLISECONDS);
-						if (wfDataRetrieved)
-						{
-							wfDataRetrieved = false;
-							addFountainMarkers();
-						}
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -387,16 +362,17 @@ public class MapTest extends FragmentActivity
 						e.printStackTrace();
 					}
 		        }
+		        addFountainMarkers();
+		        wfDataRetrieved = false;
 			}
 		}
 		else {
 			if (mLocationClient.isConnected()) {
 				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
 				wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.rate_php)+"?dbpass="+getString(R.string.db_pass)+"&fid="+dialog.getFid()+"&rating="+dialog.rating+"&uid="+pref.getString("prefUserID", "-1"), getString(R.string.rate_php));
-		        if (!wfDataRetrieved) {
+		        while (!wfDataRetrieved) {
 					try {
 						wfTask.get(1000, TimeUnit.MILLISECONDS);
-						wfDataRetrieved = false;
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -409,8 +385,9 @@ public class MapTest extends FragmentActivity
 						e.printStackTrace();
 					}
 		        }
+		        wfDataRetrieved = false;
 		        Fountain f = getFountainById(dialog.getFid());
-		        Marker m = mFountainMarkers.get(f);
+		        Marker m = f.mMarker;
 		        m.setSnippet("Overall Rating "+(f.nYes - f.nNo));
 		        m.showInfoWindow();
 			}
@@ -423,10 +400,10 @@ public class MapTest extends FragmentActivity
 	}
 	
 	private Fountain getFountainByMarker(Marker marker) {
-		if (mFountainMarkers != null) {
-			for (Map.Entry<Fountain, Marker> entry : mFountainMarkers.entrySet()) {
-				if (marker.equals(entry.getValue())) {
-					return entry.getKey();
+		if (mFountains != null) {
+			for (Fountain f : mFountains) {
+				if (marker.equals(f.mMarker)) {
+					return f;
 				}
 			}
 		}
@@ -434,10 +411,10 @@ public class MapTest extends FragmentActivity
 	}
 	
 	private Fountain getFountainById(int fid) {
-		if (mFountainMarkers != null) {
-			for (Map.Entry<Fountain, Marker> entry : mFountainMarkers.entrySet()) {
-				if (entry.getKey().id == fid) {
-					return entry.getKey();
+		if (mFountains != null) {
+			for (Fountain f : mFountains) {
+				if (f.id == fid) {
+					return f;
 				}
 			}
 		}

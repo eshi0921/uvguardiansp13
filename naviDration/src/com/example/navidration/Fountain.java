@@ -1,5 +1,7 @@
 package com.example.navidration;
 
+import com.google.android.gms.maps.model.Marker;
+
 public class Fountain {
 	
 	public static int FOUNTAINID = 0;
@@ -13,6 +15,8 @@ public class Fountain {
 	protected double longitude;
 	protected int nYes;
 	protected int nNo;
+	
+	protected Marker mMarker;
 	
 	Fountain(int id, double latitude, double longitude, int nYes, int nNo) {
 		this.id = id;

@@ -40,6 +40,9 @@ public class FountainPrompt extends DialogFragment {
 		
 		View view = inflater.inflate(R.layout.fountain_modify, null);
 		
+		if (getArguments().getString("title").equals(getString(R.string.rate_fountain)))
+			view.findViewById(R.id.additional).setVisibility(View.GONE);
+
 		builder.setView(view)
 			   .setTitle(getArguments().getString("title"))
 			   .setPositiveButton(getArguments().getString("positive"), new DialogInterface.OnClickListener() {
