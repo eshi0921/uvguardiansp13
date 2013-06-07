@@ -46,7 +46,24 @@
 		}
 	
 
-	echo "Success";
+	$sqlY = 'SELECT Count(Rating) AS numYes FROM Fountain_Rating WHERE Fount_ID='.$fid.' AND Rating=\'Y\';';
+	$sqlN = 'SELECT Count(Rating) AS numNo FROM Fountain_Rating WHERE Fount_ID='.$fid.' AND Rating=\'N\';';
+
+	if(!$resultY = $con->query($sqlY)){
+	die('There was an error running the query [' . $con->error . ']');
+	}
+
+	if(!$resultN = $con->query($sqlN)){
+	die('There was an error running the query [' . $con->error . ']');
+	}
+
+	$rowY = $resultY->fetch_assoc();
+	$numY = $rowY['numYes'];
+
+	$rowN = $resultN->fetch_assoc();
+	$numN = $rowN['numNo'];
+	
+	echo $numY.','.$numN;
 			
 ?>
 	
