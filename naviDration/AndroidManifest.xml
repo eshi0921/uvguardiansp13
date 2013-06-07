@@ -66,7 +66,6 @@
         </activity>
         <activity
                 android:name=".MapTest"
-                android:screenOrientation="portrait"
                 android:label="@string/title_activity_map"
                 android:parentActivityName="com.example.navidration.menu" >
                 <meta-data

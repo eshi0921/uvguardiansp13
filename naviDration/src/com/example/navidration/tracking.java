@@ -9,6 +9,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,6 +61,9 @@ public class tracking extends Activity implements SensorEventListener {
     private static int DEFAULT_IDLE = 0;
     private static int DEFAULT_JOGGING_MAX_STEPS = 140;
     private LinkedList<Long> step_timestamps = new LinkedList<Long>();
+
+    Uri notification;
+    Ringtone mRingtone;
 
     private static int IDLE_MODE = 90009;
     private static int WALKING_MODE = 10001;
@@ -128,9 +134,9 @@ public class tracking extends Activity implements SensorEventListener {
             }
             else if (hi < 91)
             {
-                if (intensity == 1)
+                if (intensity == WALKING_MODE)
                     water = 0.5;
-                else if (intensity == 2)
+                else if (intensity == JOGGING_MODE)
                     water = 0.75;
                 else
                     water = 1;
@@ -138,9 +144,9 @@ public class tracking extends Activity implements SensorEventListener {
             }
             else if (hi < 104)
             {
-                if (intensity == 1)
+                if (intensity == WALKING_MODE)
                     water = 0.75;
-                else if (intensity == 2)
+                else if (intensity == JOGGING_MODE)
                     water = 0.75;
                 else
                     water = 1;
@@ -148,9 +154,9 @@ public class tracking extends Activity implements SensorEventListener {
             }
             else if (hi < 125)
             {
-                if (intensity == 1)
+                if (intensity == WALKING_MODE)
                     water = 0.75;
-                else if (intensity == 2)
+                else if (intensity == JOGGING_MODE)
                     water = 0.75;
                 else
                     water = 1;
@@ -158,12 +164,7 @@ public class tracking extends Activity implements SensorEventListener {
             }
             else
             {
-                if (intensity == 1)
-                    water = 1;
-                else if (intensity == 2)
-                    water = 1;
-                else
-                    water = 1;
+                water = 1;
                 return 5;	// extreme danger
             }
         }
@@ -320,6 +321,8 @@ public class tracking extends Activity implements SensorEventListener {
         mGravity= mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        mRingtone = RingtoneManager.getRingtone(getApplicationContext(), notification);
         //get layout
         WeatherAsyncTask wTask = new WeatherAsyncTask();
 
@@ -367,7 +370,8 @@ public class tracking extends Activity implements SensorEventListener {
             isTracking = false;
             mTimer.cancel();
             mTimer.purge();
-
+            if (mRingtone.isPlaying())
+                mRingtone.stop();
         }
     }
 
@@ -479,6 +483,14 @@ public class tracking extends Activity implements SensorEventListener {
                 dehydrationMessage = "High risk";
 
             tvHydrate.setText("Current Hydration Level: "+dehydrationMessage);
+
+            if (dehydrationLevel >= 4 && !mRingtone.isPlaying())
+            {
+                try {
+
+                    mRingtone.play();
+                } catch (Exception e) {}
+            }
         }
 
 
@@ -499,6 +511,9 @@ public class tracking extends Activity implements SensorEventListener {
     @Override
     protected void onPause() {
         super.onPause();
+        if (mRingtone.isPlaying())
+            mRingtone.stop();
+
         mSensorManager.unregisterListener(this);
     }
 }
