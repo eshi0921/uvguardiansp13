@@ -63,7 +63,7 @@
 	$rowN = $resultN->fetch_assoc();
 	$numN = $rowN['numNo'];
 	
-	echo $numY.','.$numN;
+	echo $fid.','.$numY.','.$numN;
 			
 ?>
 	

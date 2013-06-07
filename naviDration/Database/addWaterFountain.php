@@ -62,7 +62,7 @@
 	$rowN = $resultN->fetch_assoc();
 	$numN = $rowN['numNo'];
 
-	echo $fid.','.$latitude.','.$longitude.','.$numY.','.$numN;	
+	echo $fid.','.$latitude.','.$longitude.','.$numY.','.$numN.";";	
 	
 			
 ?>
