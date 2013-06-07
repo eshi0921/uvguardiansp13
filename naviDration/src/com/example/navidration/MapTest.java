@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,11 +33,12 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -55,11 +57,14 @@ public class MapTest extends FragmentActivity
 	
 	private GoogleMap mMap;
 	private LocationClient mLocationClient;
-	private Map<Fountain,Marker> mFountainMarkers;
+	private HashMap<Fountain,Marker> mFountainMarkers;
+	private ArrayList<Fountain> mFountains;
 	
 	boolean wfDataRetrieved;
 	
 	private class WaterFountainAsyncTask extends AsyncTask<String, Integer, Void>{
+		
+		String rawdata = null;
 		
 		@Override
 		protected void onPreExecute() {
@@ -76,19 +81,20 @@ public class MapTest extends FragmentActivity
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			wfDataRetrieved = true;
+			if (rawdata != null)
+				wfDataRetrieved = true;
 		}
 		
 		@Override
 		protected Void doInBackground(String... params) {
 	    	URL url = null;
-	    	String rawdata = "";
 	    	InputStreamReader reader = null;
 	    	BufferedReader buffer = null;
 	    	//System.out.println("RETRIEVING WF");
 	    		
 	    	try {
 	    		String dbURL = params[0];
+	    		System.out.println(dbURL);
 	    		url = new URL(dbURL);
 				HttpURLConnection fountainDBConnection = (HttpURLConnection) url.openConnection();
 				if (fountainDBConnection != null) {
@@ -100,47 +106,57 @@ public class MapTest extends FragmentActivity
 	    		rawdata = buffer.readLine();
 	    		if (rawdata != null)
 	    		{
-	    	    	if (mFountainMarkers == null)
-	    	    		mFountainMarkers = new HashMap<Fountain,Marker>();
-	    	    	
-	    			System.out.println(rawdata);
-	    			String[] fountains = rawdata.split(";");
-	    			for (int i = 0; i < fountains.length; i++) {
-	    				String[] attribs = fountains[i].split(",");
-	    				System.out.println("Adding WF!");
-	    				mFountainMarkers.put(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
-	    													Double.parseDouble(attribs[Fountain.LATITUDE]),
-	    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
-	    													Integer.parseInt(attribs[Fountain.NYES]),
-	    													Integer.parseInt(attribs[Fountain.NNO])), null);
+	    			if(params[1].equals(getString(R.string.get_php)) || params[1].equals(getString(R.string.add_php)))
+	    			{
+	    				if (mFountains == null)
+	    					mFountains = new ArrayList<Fountain>();
+	    				
+		    	    	if (mFountainMarkers == null)
+		    	    		mFountainMarkers = new HashMap<Fountain,Marker>();
+		    	    	
+	    				System.out.println(rawdata);
+		    			String[] fountains = rawdata.split(";");
+		    			for (int i = 0; i < fountains.length; i++) {
+		    				String[] attribs = fountains[i].split(",");
+		    				System.out.println("Adding WF!");
+		    				System.out.println(fountains[i]);
+		    				System.out.println(fountains[i].length());
+		    				/**mFountainMarkers.put(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
+		    													Double.parseDouble(attribs[Fountain.LATITUDE]),
+		    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
+		    													Integer.parseInt(attribs[Fountain.NYES]),
+		    													Integer.parseInt(attribs[Fountain.NNO])), null);*/
+		    				if (attribs.length == 5) {
+		    					mFountains.add(new Fountain(Integer.parseInt(attribs[Fountain.FOUNTAINID]),
+		    													Double.parseDouble(attribs[Fountain.LATITUDE]),
+		    													Double.parseDouble(attribs[Fountain.LONGITUDE]),
+		    													Integer.parseInt(attribs[Fountain.NYES]),
+		    													Integer.parseInt(attribs[Fountain.NNO])));
+		    				}
+		    			}
 	    			}
-	    		}
-	    		else
-	    		{
-	    			System.out.println("NO FOUNTAINS NEARBY");
-	    			displayMessage("No water fountains nearby");
+	    			else if (params[1].equals(getString(R.string.rate_php)))
+	    			{
+	    				String[] attribs = rawdata.split(",");
+	    				int fid = Integer.parseInt(attribs[0]);
+	    				Fountain f = getFountainById(fid);
+	    				f.nYes = Integer.parseInt(attribs[1]);
+	    				f.nNo = Integer.parseInt(attribs[2].trim());
+	    			}
 	    		}
 	    		reader.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-                displayMessage(e.getMessage());
 			} finally {
 	            if (reader != null){
 	                try{
 	                    reader.close();
 	                }catch (Exception e){
 	                    e.printStackTrace();
-	                    displayMessage(e.getMessage());
 	                }
 	            }
 			}
 	    	return null;
-		}
-		
-		private void displayMessage(String msg)
-		{
-			Context context = getApplicationContext();
-			Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -195,7 +211,7 @@ public class MapTest extends FragmentActivity
         button.setOnClickListener(new View.OnClickListener() {			
 			@Override
 			public void onClick(View arg0) {
-				FountainPrompt.newInstance(getString(R.string.add_fountain), getString(R.string.add), null)
+				FountainPrompt.newInstance(getString(R.string.add_fountain), getString(R.string.add), -1)
 							  .show(getSupportFragmentManager(), getString(R.string.add_fountain));
 			}
 		});
@@ -262,16 +278,26 @@ public class MapTest extends FragmentActivity
 	}
 
     private void addFountainMarkers() {
-        Iterator<Fountain> it = mFountainMarkers.keySet().iterator();
+        /**Iterator<Entry<Fountain,Marker>> it = mFountainMarkers.entrySet().iterator();
         while (it.hasNext()) {
-        	Fountain f = (Fountain) it.next();
+        	Entry<Fountain,Marker> entry = (Entry<Fountain,Marker>) it.next();
+        	Fountain f = entry.getKey();
+        	it.remove();
         	mFountainMarkers.put(f, mMap.addMarker(new MarkerOptions()
 	        	.position(new LatLng(f.latitude, f.longitude))
 	        	.title("ID: "+f.id)
 	        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
 	        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain))));
-        	it.remove(); // avoid concurrent modification
-        }
+        }*/
+    	Iterator<Fountain> it = mFountains.iterator();
+    	while (it.hasNext()) {
+    		Fountain f = it.next();
+    		mFountainMarkers.put(f, mMap.addMarker(new MarkerOptions()
+	        	.position(new LatLng(f.latitude, f.longitude))
+	        	.title("ID: "+f.id)
+	        	.snippet("Overall Rating: "+(f.nYes - f.nNo))
+	        	.icon(BitmapDescriptorFactory.fromResource(R.drawable.fountain))));
+    	}
     }
 	@Override
 	public void onLocationChanged(Location loc) {
@@ -283,10 +309,12 @@ public class MapTest extends FragmentActivity
 		}
 		if (mFountainMarkers == null) {
 	        WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
-	        wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.get_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude());
+	        wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.get_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude(), getString(R.string.get_php));
 	        if (!wfDataRetrieved) {
 				try {
 					wfTask.get(1000, TimeUnit.MILLISECONDS);
+					if (wfDataRetrieved)
+						wfDataRetrieved = false;
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -299,8 +327,10 @@ public class MapTest extends FragmentActivity
 					e.printStackTrace();
 				}
 	        }
-	        addFountainMarkers();
 		}
+        
+		if (wfDataRetrieved)
+			addFountainMarkers();
 	}
 
 	@Override
@@ -324,29 +354,65 @@ public class MapTest extends FragmentActivity
 
 	@Override
 	public void onInfoWindowClick(Marker marker) {
-		FountainPrompt fp = FountainPrompt.newInstance(getString(R.string.rate_fountain), getString(R.string.rate), marker);
+		Fountain f = getFountainByMarker(marker);
+		FountainPrompt fp = FountainPrompt.newInstance(getString(R.string.rate_fountain), getString(R.string.rate), f.id);
 		fp.show(getSupportFragmentManager(), getString(R.string.rate_fountain));
 	}
 	
 	@Override
 	public void onDialogPositiveClick(FountainPrompt dialog) {
-		if (FountainPrompt.mMarker == null) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+		if (dialog.getFid() < 0) {
 			if (mLocationClient.isConnected()) {
 				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
 				Location loc = mLocationClient.getLastLocation();
-				wfTask.execute("http://"+R.string.db_ip+"/"+R.string.rate_php+"?dbpass="+R.string.db_pass+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude());
+				wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.add_php)+"?dbpass="+getString(R.string.db_pass)+"&latitude="+loc.getLatitude()+"&longitude="+loc.getLongitude()+"&rating="+dialog.rating+"&uid="+pref.getString("prefUserID", "-1"), getString(R.string.add_php));
+		        if (!wfDataRetrieved) {
+					try {
+						wfTask.get(1000, TimeUnit.MILLISECONDS);
+						if (wfDataRetrieved)
+						{
+							wfDataRetrieved = false;
+							addFountainMarkers();
+						}
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ExecutionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (TimeoutException e) {
+						// TODO Auto-generated catch block
+						Toast.makeText(this, "Add fountain timeout", Toast.LENGTH_SHORT).show();
+						e.printStackTrace();
+					}
+		        }
 			}
 		}
 		else {
-			Fountain key = null;
-			for(Map.Entry<Fountain,Marker> entry : mFountainMarkers.entrySet()) {
-				if (FountainPrompt.mMarker.equals(entry.getValue())) {
-					key = entry.getKey();
-				}
-			}
 			if (mLocationClient.isConnected()) {
 				WaterFountainAsyncTask wfTask = new WaterFountainAsyncTask();
-				wfTask.execute("http://"+R.string.db_ip+"/"+R.string.rate_php+"?dbpass="+R.string.db_pass+"&id="+key.id+"&rating="+dialog.rating);
+				wfTask.execute("http://"+getString(R.string.db_ip)+"/"+getString(R.string.rate_php)+"?dbpass="+getString(R.string.db_pass)+"&fid="+dialog.getFid()+"&rating="+dialog.rating+"&uid="+pref.getString("prefUserID", "-1"), getString(R.string.rate_php));
+		        if (!wfDataRetrieved) {
+					try {
+						wfTask.get(1000, TimeUnit.MILLISECONDS);
+						wfDataRetrieved = false;
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ExecutionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (TimeoutException e) {
+						// TODO Auto-generated catch block
+						Toast.makeText(this, "Updating ratings timeout", Toast.LENGTH_SHORT).show();
+						e.printStackTrace();
+					}
+		        }
+		        Fountain f = getFountainById(dialog.getFid());
+		        Marker m = mFountainMarkers.get(f);
+		        m.setSnippet("Overall Rating "+(f.nYes - f.nNo));
+		        m.showInfoWindow();
 			}
 		}
 	}
@@ -354,5 +420,27 @@ public class MapTest extends FragmentActivity
 	@Override
 	public void onDialogNegativeClick(FountainPrompt dialog) {
 		
+	}
+	
+	private Fountain getFountainByMarker(Marker marker) {
+		if (mFountainMarkers != null) {
+			for (Map.Entry<Fountain, Marker> entry : mFountainMarkers.entrySet()) {
+				if (marker.equals(entry.getValue())) {
+					return entry.getKey();
+				}
+			}
+		}
+		return null;
+	}
+	
+	private Fountain getFountainById(int fid) {
+		if (mFountainMarkers != null) {
+			for (Map.Entry<Fountain, Marker> entry : mFountainMarkers.entrySet()) {
+				if (entry.getKey().id == fid) {
+					return entry.getKey();
+				}
+			}
+		}
+		return null;
 	}
 }
